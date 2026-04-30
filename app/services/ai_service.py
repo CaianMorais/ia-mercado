@@ -6,7 +6,7 @@ from app.schemas.bot_schema import RespostaIA, ResumoIA
 class AIService:
     def __init__(self):
         self.client = genai.Client(api_key=settings_ia_key())
-        self.model_id = "gemini-3.1-flash-lite-preview"
+        self.model_id = "gemini-3-flash-preview"
 
     def process_message(self, user_message: str, history: list) -> RespostaIA:
         response = self.client.models.generate_content(
@@ -31,7 +31,8 @@ class AIService:
             contents=resultado,
             config=types.GenerateContentConfig(
                 system_instruction="Você recebeu uma lista com tudo que foi feito na lista de compras, agora faça um pequeno resumo de tudo que foi feito. "
-                "Evite colocar o nome dos produtos entre aspas no texto de resumo.",
+                "Evite colocar o nome dos produtos entre aspas no texto de resumo."
+                "Se receber valores em reais (R$) mostre-os da maneira correta.",
                 response_mime_type="application/json",
                 response_schema=ResumoIA
             )

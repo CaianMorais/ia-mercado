@@ -25,6 +25,7 @@ class ShoppingService:
         itens_recem_adicionados = []
         itens_comprados = []
         itens_mantidos = []
+        lista_de_itens = []
         resultados = []
 
         ia_response.comandos.sort(key=lambda x: prioridade[x.acao.value])
@@ -33,7 +34,7 @@ class ShoppingService:
             if comando.acao == "listar":
                 itens_lista = self.repository.get_all_items_from_list(self.db)
                 for item in itens_lista:
-                    resultados.append(f"{item.nome_item}")
+                    lista_de_itens.append(f"{item.nome_item}")
             elif comando.acao == "adicionar":
                 for item in comando.itens:
                     if self.repository.check_if_product_has_been_added_in_last_48_hours(self.db, item):
@@ -59,13 +60,9 @@ class ShoppingService:
                         itens_comprados.append(item.nome_item)
                         self.repository.remove_item_from_list(self.db, item.nome_item)
                 self.repository.add_shopping_to_history(self.db, user_name, comando.valor)
-                resultados.append(f"compra finalizada, valor total: {comando.valor}")
+                resultados.append(f"compra finalizada, valor total: R$ {comando.valor:.2f}")
         
-        print(f"Itens recem adicionados: {itens_recem_adicionados}")
-        print(f"Itens comprados: {itens_comprados}")
-        print(f"Itens mantidos: {itens_mantidos}")
-        print(f"Resultados: {resultados}")
-        return resultados, itens_comprados, itens_mantidos
+        return resultados, itens_comprados, itens_mantidos, lista_de_itens
 
 # if __name__ == "__main__":
 #     service = ShoppingService()
