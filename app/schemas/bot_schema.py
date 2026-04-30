@@ -6,8 +6,8 @@ class AcaoEnum(str, Enum):
     ADICIONAR = "adicionar"
     REMOVER = "remover"
     LISTAR = "listar"
-    FINALIZAR = "finalizar"
     MANTER = "manter"
+    FINALIZAR = "finalizar"
 
 class ItemComando(BaseModel):
     acao: AcaoEnum = Field(description="A ação específica para este(s) item(ns)")
@@ -17,3 +17,6 @@ class ItemComando(BaseModel):
 class RespostaIA(BaseModel):
     comandos: List[ItemComando] = Field(description="Lista de ações a serem executadas")
     mensagem_direta: str = Field(None, description="Uma resposta amigável para o utilizador")
+
+class ResumoIA(BaseModel):
+    resumo: str = Field(description="Resumo dos resultados")

@@ -27,3 +27,8 @@ def get_db():
 def settings_ia_key():
     IA_API_KEY: str = os.getenv("IA_API_KEY")
     return IA_API_KEY
+
+def twilio_config():
+    account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+    auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+    return account_sid, auth_token
