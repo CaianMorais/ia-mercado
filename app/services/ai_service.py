@@ -6,7 +6,7 @@ from app.schemas.bot_schema import RespostaIA, ResumoIA
 class AIService:
     def __init__(self):
         self.client = genai.Client(api_key=settings_ia_key())
-        self.model_id = "gemini-3-flash-preview"
+        self.model_id = "gemini-2.5-flash-lite"
 
     def process_message(self, user_message: str, history: list) -> RespostaIA:
         response = self.client.models.generate_content(
@@ -37,6 +37,8 @@ class AIService:
                 response_schema=ResumoIA
             )
         )
+        if not resumo:
+            return ""
         return resumo.parsed
 
 # if __name__ == "__main__":

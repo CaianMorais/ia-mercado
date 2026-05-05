@@ -28,7 +28,13 @@ def settings_ia_key():
     IA_API_KEY: str = os.getenv("IA_API_KEY")
     return IA_API_KEY
 
+# configuração do twilio
 def twilio_config():
     account_sid = os.getenv("TWILIO_ACCOUNT_SID")
     auth_token = os.getenv("TWILIO_AUTH_TOKEN")
-    return account_sid, auth_token
+    tel_number = os.getenv("TWILIO_TEL_NUMBER")
+
+    if not account_sid or not auth_token or not tel_number:
+        raise ValueError("Configurações do Twilio em .env estão ausentes")
+
+    return account_sid, auth_token, tel_number
