@@ -8,6 +8,7 @@ class AcaoEnum(str, Enum):
     LISTAR = "listar"
     MANTER = "manter"
     FINALIZAR = "finalizar"
+    ANALISE = "analise"
 
 class ItemComando(BaseModel):
     acao: AcaoEnum = Field(description="A ação específica para este(s) item(ns)")

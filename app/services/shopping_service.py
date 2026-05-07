@@ -7,9 +7,9 @@ prioridade = {
     "finalizar": 2,
     "adicionar": 3,
     "remover": 4,
-    "listar": 5
+    "listar": 5,
+    "analise": 6
 }
-
 
 class ShoppingService:
     def __init__(self, db: Session):
@@ -31,7 +31,7 @@ class ShoppingService:
         ia_response.comandos.sort(key=lambda x: prioridade[x.acao.value])
 
         for comando in ia_response.comandos:
-            print(f"DEBUG: Acao={comando.acao.value}, Items={comando.itens}, Valor={comando.valor}")
+            print(f"DEBUG: Acao={comando.acao.value}, Items={comando.itens}, Valor={comando.valor}, Supermercado={comando.supermercado}")
             if comando.acao == "listar":
                 itens_lista = self.repository.get_all_items_from_list(self.db)
                 for item in itens_lista:
@@ -47,11 +47,15 @@ class ShoppingService:
                         resultados.append(f"produto {item} adicionado na lista de compras")
 
             elif comando.acao == "remover":
-                for item in comando.itens:
-                    if self.repository.remove_item_from_list(self.db, item):
-                        resultados.append(f"produto {item} removido da lista de compras")
-                    else:
-                        resultados.append(f"produto {item} nao foi encontrado na lista de compras")
+                if "todos os itens" in comando.itens:
+                    self.repository.remove_all_items_from_list(self.db)                    
+                    resultados.append(f"todos os itens foram removidos da lista de compras")
+                else:
+                    for item in comando.itens:
+                        if self.repository.remove_item_from_list(self.db, item):
+                            resultados.append(f"produto {item} removido da lista de compras")
+                        else:
+                            resultados.append(f"produto {item} nao foi encontrado na lista de compras")
                         
             elif comando.acao == "manter":
                 for item in comando.itens:
@@ -64,8 +68,11 @@ class ShoppingService:
                     if item.nome_item not in itens_mantidos:
                         itens_comprados.append(item.nome_item)
                         self.repository.remove_item_from_list(self.db, item.nome_item)
-                self.repository.add_shopping_to_history(self.db, user_name, comando.valor)
-                resultados.append(f"compra finalizada, valor total: R$ {comando.valor:.2f}")
+                self.repository.add_shopping_to_history(self.db, user_name, comando.valor, comando.supermercado, itens_comprados)
+                if comando.supermercado:
+                    resultados.append(f"compra finalizada, valor total: R$ {comando.valor:.2f} no supermercado {comando.supermercado}")
+                else:
+                    resultados.append(f"compra finalizada, valor total: R$ {comando.valor:.2f}")
 
         print("RESULTADOS", resultados)
         print("ITENS COMPRADOS", itens_comprados)
@@ -74,7 +81,3 @@ class ShoppingService:
         print("ITENS RECEM ADICIONADOS", itens_recem_adicionados)
         
         return resultados, itens_comprados, itens_mantidos, lista_de_itens, itens_recem_adicionados
-
-# if __name__ == "__main__":
-#     service = ShoppingService()
-#     service.execute_command("comprei tudo, exceto carne, gastei 99 reais")

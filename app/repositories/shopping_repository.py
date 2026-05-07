@@ -38,6 +38,11 @@ class ShoppingRepository:
         return db.query(ListaCompras).all()
 
     @staticmethod
+    def remove_all_items_from_list(db: Session):
+        db.query(ListaCompras).delete()
+        db.commit()
+
+    @staticmethod
     def add_shopping_to_history(db: Session, user: str, valor: float = 0.0, supermercado: str = None, itens: list = None):
         shopping = HistoricoCompras(
             user=user,
