@@ -38,11 +38,13 @@ class ShoppingRepository:
         return db.query(ListaCompras).all()
 
     @staticmethod
-    def add_shopping_to_history(db: Session, user: str, valor: float = 0.0):
+    def add_shopping_to_history(db: Session, user: str, valor: float = 0.0, supermercado: str = None, itens: list = None):
         shopping = HistoricoCompras(
             user=user,
             gasto_valor=valor,
-            data_compra=datetime.now()
+            data_compra=datetime.now(),
+            supermercado=supermercado,
+            lista_itens_comprados=itens
         )
         db.add(shopping)
         db.commit()

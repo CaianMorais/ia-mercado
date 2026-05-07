@@ -13,6 +13,7 @@ class ItemComando(BaseModel):
     acao: AcaoEnum = Field(description="A ação específica para este(s) item(ns)")
     itens: List[str] = Field(default=[], description="Lista de nomes de produtos")
     valor: Optional[float] = Field(None, description="Valor gasto, se aplicável")
+    supermercado: Optional[str] = Field(None, description="Supermercado, se aplicável")
 
 class RespostaIA(BaseModel):
     comandos: List[ItemComando] = Field(description="Lista de ações a serem executadas")

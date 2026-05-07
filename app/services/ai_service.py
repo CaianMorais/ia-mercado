@@ -20,7 +20,8 @@ class AIService:
                         "adicionar, remover itens da lista de compras ou listar os itens da lista."
                         "Considere que a mensagem pode conter itens para adicionar e itens para remover."
                         "Ao ser informado que a compra foi finalizada, a ação será finalizar a compra com todos os itens da lista e salvando o valor"
-                        "Se for informado exceção de compra de algum item da lista use a ação manter para manter o item na lista ",
+                        "Se for informado exceção de compra de algum item da lista use a ação manter para manter o item na lista "
+                        "Se for informado o nome de um supermercado, identifique-o use a ação supermercado no comando ",
                         response_mime_type="application/json", 
                         response_schema=RespostaIA
                     )
