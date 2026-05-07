@@ -30,7 +30,7 @@ def handle_whatsapp(
     client = Client(account_sid, auth_token)
 
     service = ShoppingService(db)
-    resultado, itens_comprados, itens_mantidos, lista_de_itens, itens_recem_adicionados = service.execute_command(user_message=Body, user_name=ProfileName)
+    resultado, lista_de_itens = service.execute_command(user_message=Body, user_name=ProfileName)
 
     chat_log_service = ChatLogService(db)
 
@@ -53,16 +53,9 @@ def handle_whatsapp(
         )
 
         chat_log_service.add_chat_log(ProfileName, Body, resumo.resumo)
-    else:
-        if lista_de_itens:
-            lista_formatada = "\n".join(lista_de_itens)
-            client.messages.create(
-                from_='whatsapp:+'+tel_number,
-                body=lista_formatada,
-                to='whatsapp:+'+WaId
-            )
-            chat_log_service.add_chat_log(ProfileName, Body, lista_formatada)
-        else:
+
+    if lista_de_itens:
+        if len(lista_de_itens) == 0:
             resposta = f"{ProfileName}, sua lista de compras está vazia."
             client.messages.create(
                 from_='whatsapp:+'+tel_number,
@@ -70,5 +63,14 @@ def handle_whatsapp(
                 to='whatsapp:+'+WaId
             )
             chat_log_service.add_chat_log(ProfileName, Body, resposta)
+        else:
+            lista_formatada = "\n".join(lista_de_itens)
+            client.messages.create(
+                from_='whatsapp:+'+tel_number,
+                body=lista_formatada,
+                to='whatsapp:+'+WaId
+            )
+            chat_log_service.add_chat_log(ProfileName, Body, lista_formatada)
+                    
     
     return {"status": "success", "message": "Mensagem enviada"}
