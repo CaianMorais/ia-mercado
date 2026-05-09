@@ -2,6 +2,7 @@ from google import genai
 from google.genai import types
 from app.core.config import settings_ia_key
 from app.schemas.bot_schema import RespostaIA, ResumoIA
+from sqlalchemy.orm import Session
 
 class AIService:
     def __init__(self):
@@ -11,9 +12,12 @@ class AIService:
     def process_message(self, user_message: str, history: list) -> RespostaIA:
         for model_id in self.model_id:
             try:
+                current_message = {"role": "user", "parts": [{"text": user_message}]}
+                messages = history + [current_message]
+
                 response = self.client.models.generate_content(
                     model=model_id,
-                    contents=user_message,
+                    contents=messages,
                     config=types.GenerateContentConfig(
                         system_instruction="Você é um bot de lista de compras. "
                         "Analise a mensagem do usuário e gere uma lista de comandos para "

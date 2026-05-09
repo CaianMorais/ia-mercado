@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from app.services.ai_service import AIService
-from app.repositories.shopping_repository import ShoppingRepository 
+from app.repositories.shopping_repository import ShoppingRepository
+from app.repositories.chat_log_repository import ChatLogRepository
 
 prioridade = {
     "manter": 1,
@@ -18,7 +19,13 @@ class ShoppingService:
         self.repository = ShoppingRepository
 
     def execute_command(self, user_message: str, user_name: str):
-        ia_response = self.ai_service.process_message(user_message, [])
+        user_messages = ChatLogRepository.get_last_user_messages(self.db, user_name)
+        history = []
+        for msg in user_messages:
+            history.append({"role": "user", "parts": [{"text": msg.pergunta}]})
+            history.append({"role": "model", "parts": [{"text": msg.resposta}]})
+
+        ia_response = self.ai_service.process_message(user_message, history)
 
         # prepara listas
         itens_recem_adicionados = []
@@ -74,10 +81,10 @@ class ShoppingService:
                 else:
                     resultados.append(f"compra finalizada, valor total: R$ {comando.valor:.2f}")
 
-        print("RESULTADOS", resultados)
-        print("ITENS COMPRADOS", itens_comprados)
-        print("ITENS MANTIDOS", itens_mantidos)
-        print("LISTA DE ITENS", lista_de_itens)
-        print("ITENS RECEM ADICIONADOS", itens_recem_adicionados)
+        print("RESULTADOS: ", resultados)
+        # print("ITENS COMPRADOS", itens_comprados)
+        # print("ITENS MANTIDOS", itens_mantidos)
+        # print("LISTA DE ITENS", lista_de_itens)
+        # print("ITENS RECEM ADICIONADOS", itens_recem_adicionados)
         
-        return resultados, itens_comprados, itens_mantidos, lista_de_itens, itens_recem_adicionados
+        return resultados, lista_de_itens

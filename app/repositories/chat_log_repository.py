@@ -14,3 +14,12 @@ class ChatLogRepository:
         db.commit()
         db.refresh(chat_log)
         return chat_log
+
+    @staticmethod
+    def get_last_user_messages(db: Session, user: str, limit: int = 3):
+        return db.query(ChatLog)\
+            .filter(ChatLog.user == user)\
+            .order_by(ChatLog.id.desc())\
+            .limit(limit)\
+            .all()
+        
