@@ -26,7 +26,11 @@ class AIService:
                         "Ao ser informado que todos os itens deve ser removido, use a ação remover e adicione o termo 'todos os itens' em itens no comando "
                         "Ao ser informado que a compra foi finalizada, a ação será finalizar a compra com todos os itens da lista e salvando o valor"
                         "Se for informado exceção de compra de algum item da lista use a ação manter para manter o item na lista "
-                        "Se for informado o nome de um supermercado, identifique-o use a ação supermercado no comando ",
+                        "Se for informado o nome de um supermercado, identifique-o use a ação supermercado no comando "
+                        "Sempre analise o histórico para resolver pronomes (como 'ele', 'o', 'aquele'). "
+                        "Se o usuário pedir para remover 'o' ou 'este' logo após adicionar um item, "
+                        "entenda que ele se refere ao último item mencionado, e não à lista completa, "
+                        "a menos que ele diga explicitamente 'tudo' ou 'todos'.",
                         response_mime_type="application/json", 
                         response_schema=RespostaIA
                     )

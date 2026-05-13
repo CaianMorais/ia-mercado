@@ -46,6 +46,7 @@ class ShoppingService:
 
             elif comando.acao == "adicionar":
                 for item in comando.itens:
+                    item = item.lower()
                     if self.repository.check_if_product_has_been_added_in_last_48_hours(self.db, item):
                         itens_recem_adicionados.append(item)
                         resultados.append(f"produto {item} ja foi adicionado nas ultimas 48h")
@@ -59,6 +60,7 @@ class ShoppingService:
                     resultados.append(f"todos os itens foram removidos da lista de compras")
                 else:
                     for item in comando.itens:
+                        item = item.lower()
                         if self.repository.remove_item_from_list(self.db, item):
                             resultados.append(f"produto {item} removido da lista de compras")
                         else:
@@ -66,6 +68,7 @@ class ShoppingService:
                         
             elif comando.acao == "manter":
                 for item in comando.itens:
+                    item = item.lower()
                     itens_mantidos.append(item)
                     resultados.append(f"produto {item} mantido na lista de compras")
 
@@ -73,6 +76,7 @@ class ShoppingService:
                 itens_lista = self.repository.get_all_items_from_list(self.db)
                 for item in itens_lista:
                     if item.nome_item not in itens_mantidos:
+                        item.nome_item = item.nome_item.lower()
                         itens_comprados.append(item.nome_item)
                         self.repository.remove_item_from_list(self.db, item.nome_item)
                 self.repository.add_shopping_to_history(self.db, user_name, comando.valor, comando.supermercado, itens_comprados)
