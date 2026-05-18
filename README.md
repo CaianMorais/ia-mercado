@@ -39,6 +39,7 @@ O projeto segue princípios de **Clean Code** e organização modular:
 - `app/models`: Definição das tabelas SQL.
 - `app/schemas`: Contratos de dados e validação.
 - `app/core`: Configurações globais e conexão com DB.
+- `app/tests`: Testes unitários mockados e testes de integração do LLM.
 
 ## 📋 Pré-requisitos
 
