@@ -1,7 +1,7 @@
 from google import genai
 from google.genai import types
 from app.core.config import settings_ia_key
-from app.schemas.bot_schema import RespostaIA, ResumoIA
+from app.schemas.bot_schema import RespostaIA, ResumoIA, PesquisaPrecos
 from sqlalchemy.orm import Session
 
 class AIService:
@@ -64,6 +64,38 @@ class AIService:
                 print(f"ERRO AO PROCESSAR RESUMO: {e}")
                 continue
                 
+        return ""
+
+    def search(self, item: list = [], supermarket: str = None):
+        for model_id in self.model_id:
+            try:
+                if item and supermarket:
+                    conteudo = f"{item} no supermercado {supermarket}"
+                else:
+                    conteudo = f"{item}"
+                grounding_tool = types.Tool(
+                    google_search=types.GoogleSearch()
+                )
+
+                search = self.client.models.generate_content(
+                    model=model_id,
+                    contents=conteudo,
+                    config=types.GenerateContentConfig(
+                        tools=[grounding_tool],
+                        system_instruction="Você receberá uma lista de itens e um nome de supermercado "
+                        "e deve retornar o menor preço de cada item no supermercado pesquisado. "
+                        "Se você receber apenas a lista com um item ou mais, sem o nome do supermercado, "
+                        "A pesquisa deve retornar aquele item ou itens mais barato possível em supermercados próximos. "
+                        "Retorne os resultados de maneira ordenada, ou seja, primeiro o item ",
+                        response_mime_type="application/json",
+                        response_schema=PesquisaPrecos
+                    )
+                )
+                if search.parsed:
+                    return search.parsed
+            except Exception as e:
+                print(f"ERRO AO PROCESSAR PESQUISA: {e}")
+                continue
         return ""
 
 # if __name__ == "__main__":

@@ -32,6 +32,7 @@ class ShoppingService:
         itens_comprados = []
         itens_mantidos = []
         lista_de_itens = []
+        itens_para_pesquisar = []
         resultados = []
 
         # ordena os comandos por ordem lógica para evitar problemas na execução
@@ -84,6 +85,13 @@ class ShoppingService:
                     resultados.append(f"compra finalizada, valor total: R$ {comando.valor:.2f} no supermercado {comando.supermercado}")
                 else:
                     resultados.append(f"compra finalizada, valor total: R$ {comando.valor:.2f}")
+            
+            elif comando.acao == "pesquisar_precos":
+                itens_lista = self.repository.get_all_items_from_list(self.db)
+                for item in itens_lista:
+                    itens_para_pesquisar.append(item.nome_item)
+                itens_pesquisados = self.ai_service.search(itens_para_pesquisar, comando.supermercado)
+                
 
         print("RESULTADOS: ", resultados)
         # print("ITENS COMPRADOS", itens_comprados)

@@ -8,7 +8,7 @@ class AcaoEnum(str, Enum):
     LISTAR = "listar"
     MANTER = "manter"
     FINALIZAR = "finalizar"
-    ANALISE = "analise"
+    PESQUISAR_PRECOS = "pesquisar_precos"
 
 class ItemComando(BaseModel):
     acao: AcaoEnum = Field(description="A ação específica para este(s) item(ns)")
@@ -22,3 +22,7 @@ class RespostaIA(BaseModel):
 
 class ResumoIA(BaseModel):
     resumo: str = Field(description="Resumo dos resultados")
+
+class PesquisaPrecos(BaseModel):
+    preco: float = Field(description="Preço do item")
+    nome_supermercado: str = Field(description="Nome do supermercado")
