@@ -24,5 +24,6 @@ class ResumoIA(BaseModel):
     resumo: str = Field(description="Resumo dos resultados")
 
 class PesquisaPrecos(BaseModel):
-    preco: float = Field(description="Preço do item")
+    itens_pesquisados: List[str] = Field(description="Lista de itens pesquisados")
+    soma_total: float = Field(description="Preço total dos itens")
     nome_supermercado: str = Field(description="Nome do supermercado")

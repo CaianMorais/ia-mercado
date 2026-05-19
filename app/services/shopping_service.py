@@ -9,7 +9,7 @@ prioridade = {
     "adicionar": 3,
     "remover": 4,
     "listar": 5,
-    "analise": 6
+    "pesquisar_precos": 6
 }
 
 class ShoppingService:
@@ -18,7 +18,7 @@ class ShoppingService:
         self.ai_service = AIService()
         self.repository = ShoppingRepository
 
-    def execute_command(self, user_message: str, user_name: str):
+    def execute_command(self, user_message: str, user_name: str, state: str):
         user_messages = ChatLogRepository.get_last_user_messages(self.db, user_name)
         history = []
         for msg in user_messages:
@@ -33,6 +33,7 @@ class ShoppingService:
         itens_mantidos = []
         lista_de_itens = []
         itens_para_pesquisar = []
+        itens_pesquisados = []
         resultados = []
 
         # ordena os comandos por ordem lógica para evitar problemas na execução
@@ -87,10 +88,20 @@ class ShoppingService:
                     resultados.append(f"compra finalizada, valor total: R$ {comando.valor:.2f}")
             
             elif comando.acao == "pesquisar_precos":
-                itens_lista = self.repository.get_all_items_from_list(self.db)
-                for item in itens_lista:
-                    itens_para_pesquisar.append(item.nome_item)
-                itens_pesquisados = self.ai_service.search(itens_para_pesquisar, comando.supermercado)
+                if "todos os itens" in comando.itens:
+                    itens_lista = self.repository.get_all_items_from_list(self.db)
+                    for item in itens_lista:
+                        itens_para_pesquisar.append(item.nome_item)
+                    pesquisa = self.ai_service.search(itens_para_pesquisar, comando.supermercado, state)
+                else:
+                    pesquisa = self.ai_service.search(comando.itens, comando.supermercado, state)
+                
+                #print(f"RESULTADO DA PESQUISA: {pesquisa}")
+                for item in pesquisa.itens_pesquisados:
+                    itens_pesquisados.append(f"{item}\n")
+                    # texto += f"{item}\n"
+                itens_pesquisados += f"Valor total: R$ {pesquisa.soma_total:.2f}"
+                lista_de_itens.append(f"**Pesquisa de Preços no {pesquisa.nome_supermercado}**\n" + ''.join(itens_pesquisados))
                 
 
         print("RESULTADOS: ", resultados)
