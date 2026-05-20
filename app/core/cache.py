@@ -5,7 +5,6 @@ import requests
 def get_state_by_ddd(ddd: str) -> str:
     url_consulta_ddd = f"https://brasilapi.com.br/api/ddd/v1/{ddd}"
     try:
-        print("consultando")
         response = requests.get(url_consulta_ddd, timeout=5)
         if response.status_code == 200:
             return response.json().get("state", "")

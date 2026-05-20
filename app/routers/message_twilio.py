@@ -9,7 +9,7 @@ from app.services.chat_log_service import ChatLogService
 
 router = APIRouter()
 
-@router.post("/webhook")
+@router.post("/twilio/webhook")
 async def receive_message(
     request: Request,
     Body: str=Form(),
