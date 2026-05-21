@@ -20,7 +20,7 @@ async def receive_message(
     print("Form Data:", await request.form())
     
 
-@router.post("/whatsapp_message")
+@router.post("/twilio/message")
 def handle_whatsapp(
     Body: str=Form(),
     ProfileName: str=Form(),
