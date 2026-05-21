@@ -34,9 +34,27 @@ def db_session():
     
     session = TestingSessionLocal(bind=connection)
 
+    # Desativa checagem de chave estrangeira temporariamente para limpar as tabelas com segurança
+    session.execute(text("SET FOREIGN_KEY_CHECKS = 0"))
     session.execute(text("DELETE FROM lista_compras"))
     session.execute(text("DELETE FROM chat_log"))
     session.execute(text("DELETE FROM historico_compras"))
+    session.execute(text("DELETE FROM users"))
+    session.execute(text("SET FOREIGN_KEY_CHECKS = 1"))
+    session.commit()
+
+    # Cria usuário mock para satisfazer as constraints de chave estrangeira nos testes
+    from app.models.users import Users
+    user = Users(
+        user_name="UserTeste",
+        cpf="000.000.000-00",
+        phonenumber="123456789",
+        zip_code="00000-000",
+        city="Test City",
+        state="TS",
+        active=True
+    )
+    session.add(user)
     session.commit()
 
     nested = connection.begin_nested()
@@ -72,7 +90,7 @@ def test_contexto_pronome(service):
 
     # executa o teste igual a aplicação real
     # é necessário testar se a IA entendeu o contexto e resolveu o pronome
-    resultado, lista_final = shopping_service.execute_command("remova-o", "UserTeste")
+    resultado, lista_final, _ = shopping_service.execute_command("remova-o", "UserTeste")
 
     # o resultado deve indicar a remoção da carne, e não de tudo
     assert "produto carne removido da lista de compras" in resultado

@@ -20,6 +20,7 @@ from app.core.config import Base, SQLALCHEMY_DATABASE_URL
 import app.models.chat_log
 import app.models.historico_compras
 import app.models.lista_compras
+import app.models.users
 
 target_metadata = Base.metadata
 

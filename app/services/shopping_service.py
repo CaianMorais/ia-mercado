@@ -12,7 +12,8 @@ prioridade = {
     "adicionar": 3,
     "remover": 4,
     "listar": 5,
-    "pesquisar_precos": 6
+    "pesquisar_precos": 6,
+    "analisar": 7
 }
 
 class AgentState(TypedDict):
@@ -26,6 +27,7 @@ class AgentState(TypedDict):
     lista_de_itens: List[str]
     itens_mantidos: List[str]
     itens_comprados: List[str]
+    mensagem_direta: Optional[str]
 
 class ShoppingService:
     def __init__(self, db: Session):
@@ -50,10 +52,15 @@ class ShoppingService:
             comandos = list(ia_response.comandos)
             comandos.sort(key=lambda x: prioridade[x.acao.value])
         
+        mensagem_direta = None
+        if ia_response and hasattr(ia_response, "mensagem_direta"):
+            mensagem_direta = ia_response.mensagem_direta
+        
         return {
             "history": history,
             "commands": comandos,
-            "current_command_index": 0
+            "current_command_index": 0,
+            "mensagem_direta": mensagem_direta
         }
 
     def _gerenciar_lista_node(self, state: AgentState) -> dict:
@@ -63,7 +70,7 @@ class ShoppingService:
         itens_mantidos = list(state.get("itens_mantidos") or [])
         itens_comprados = list(state.get("itens_comprados") or [])
         
-        print(f"DEBUG (LangGraph): Acao={cmd.acao.value}, Items={cmd.itens}, Valor={cmd.valor}, Supermercado={cmd.supermercado}")
+        print(f"DEBUG (LangGraph): Acao={cmd.acao.value}, Items={cmd.itens}, Valor={cmd.valor}, Supermercado={cmd.supermercado}, Periodo={cmd.periodo}")
         
         if cmd.acao == "listar":
             itens_lista = self.repository.get_all_items_from_list(self.db)
@@ -109,6 +116,30 @@ class ShoppingService:
                 resultados.append(f"compra finalizada, valor total: R$ {cmd.valor:.2f} no supermercado {cmd.supermercado}")
             else:
                 resultados.append(f"compra finalizada, valor total: R$ {cmd.valor:.2f}")
+        
+        elif cmd.acao == "analisar":
+            historico_compras = self.repository.get_all_items_from_history(self.db, state["user_name"], cmd.periodo)
+            if historico_compras:
+                periodo_str = cmd.periodo if cmd.periodo else "mês atual"
+                linhas_analise = [f"Compras realizadas no período: {periodo_str}\n"]
+                total_gasto = 0
+                for compra in historico_compras:
+                    linhas_analise.append(f"Compra do dia: {compra.data_compra.strftime('%d/%m/%Y')}")
+                    linhas_analise.append("Itens da compra:")
+                    if isinstance(compra.lista_itens_comprados, list):
+                        for item in compra.lista_itens_comprados:
+                            linhas_analise.append(f"- {item}")
+                    elif isinstance(compra.lista_itens_comprados, str):
+                        linhas_analise.append(f"- {compra.lista_itens_comprados}")
+                    else:
+                        linhas_analise.append("- Sem itens registrados")
+                    linhas_analise.append(f"Valor da compra: R$ {compra.gasto_valor:.2f}\n")
+                    total_gasto += compra.gasto_valor
+                linhas_analise.append(f"Total gasto no período: R$ {total_gasto:.2f}")
+                lista_de_itens.append("\n".join(linhas_analise))
+            else:
+                lista_de_itens.append(f"Nenhuma compra encontrada no período: {cmd.periodo if cmd.periodo else 'mês atual'}")
+            
 
         return {
             "resultados": resultados,
@@ -211,12 +242,13 @@ class ShoppingService:
             "resultados": [],
             "lista_de_itens": [],
             "itens_mantidos": [],
-            "itens_comprados": []
+            "itens_comprados": [],
+            "mensagem_direta": None
         }
         
         final_state = app.invoke(initial_state)
         
         print("RESULTADOS (LangGraph): ", final_state["resultados"])
         
-        return final_state["resultados"], final_state["lista_de_itens"]
+        return final_state["resultados"], final_state["lista_de_itens"], final_state.get("mensagem_direta")
 

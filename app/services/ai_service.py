@@ -34,7 +34,10 @@ class AIService:
                         "Se for feito um pedido de pesquisa de preços, use a ação pesquisar_precos no comando "
                         "Se for feito um pedido de pesquisa de preços com o nome de um supermercado, use a ação pesquisar_precos no comando e adicione o nome do supermercado no comando "
                         "Se na mensagem der a entender que o usuário quer economizar ou quer o mercado que seja mais em conta, não adicione nada em supermercado no comando"
-                        "Se for feito um pedido de pesquisa de preços com os itens da lista, apenas adicione o termo 'todos os itens' em items no comando",
+                        "Se for feito um pedido de pesquisa de preços com os itens da lista, apenas adicione o termo 'todos os itens' em items no comando. "
+                        "Se na mensagem der a entender que o usuário quer que seja feita uma análise de compras passadas, use a ação analisar no comando." 
+                        "Se for feito um pedido de análise de compras, o usuário pode informar que é no período de 30 dias OU no mês atual, adicione o termo '30 dias' ou 'mês atual' no campo periodo, "
+                        "Se nao tiver período na mensagem adicione o periodo 'mês atual' no campo periodo por padrao.",
                         response_mime_type="application/json", 
                         response_schema=RespostaIA
                     )
@@ -54,10 +57,13 @@ class AIService:
                     model=model_id,
                     contents=resultado,
                     config=types.GenerateContentConfig(
-                        system_instruction="Você recebeu uma lista com tudo que foi feito na lista de compras, "
+                        system_instruction="Você vai receber informações e dados de ações realizadas, pesquisar ou análises feitas"
+                        "Considere que você pode receber uma lista com tudo que foi feito na lista de compras, "
                         "considere que também pode chegar uma lista com pesquisa de preços, "
+                        "Considere que também pode chegar uma lista com uma análise de todas as compras feitas no período, "
                         "agora faça um pequeno resumo das informações recebidas. "
-                        "Evite colocar o nome dos produtos entre aspas no texto de resumo."
+                        "Tenha em mente que de acordo com o que foi recebido, o resumo deve estar estruturado de uma forma coerente e organizada"
+                        "Evite colocar o nome dos produtos entre aspas no resumo."
                         "Se receber valores em reais (R$) mostre-os da maneira correta."
                         "Se receber nome de supermercado, mostre-o no resumo.",
                         response_mime_type="application/json",
@@ -109,7 +115,7 @@ class AIService:
                         response_schema=PesquisaPrecos
                     )
                 )
-                print("METADADOS DA BUSCA:", search.candidates[0].grounding_metadata)
+                #print("METADADOS DA BUSCA:", search.candidates[0].grounding_metadata)
 
                 if search.parsed:
                     return search.parsed

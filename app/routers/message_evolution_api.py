@@ -136,9 +136,13 @@ async def handle_whatsapp(
 
         # executa as regras de negócio
         service = ShoppingService(db)
-        resultado, lista_de_itens = service.execute_command(user_message=body, user_name=profile_name, state=estado)
+        resultado, lista_de_itens, mensagem_direta = service.execute_command(user_message=body, user_name=profile_name, state=estado)
 
         chat_log_service = ChatLogService(db)
+
+        if not resultado and not lista_de_itens and mensagem_direta:
+            await message_with_evolution(wa_id, mensagem_direta)
+            chat_log_service.add_chat_log(profile_name, body, mensagem_direta)
 
         if resultado:
             resumo = service.ai_service.resume(resultado)

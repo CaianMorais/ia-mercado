@@ -2,6 +2,7 @@ from app.models.lista_compras import ListaCompras
 from app.models.historico_compras import HistoricoCompras
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
+from app.models.users import Users
 
 class ShoppingRepository:
     
@@ -12,8 +13,14 @@ class ShoppingRepository:
 
     @staticmethod
     def add_item_to_list(db: Session, user: str, item: str, quantidade: int = 1):
+        from app.models.users import Users
+        db_user = db.query(Users).filter(Users.user_name == user).first()
+        if not db_user:
+            raise ValueError(f"Usuário '{user}' não encontrado no banco de dados.")
+            
         item_db = ListaCompras(
-            user=user,
+            usuario=db_user,
+            user_name=db_user.user_name,
             nome_item=item,
             quantidade=quantidade,
             data_criacao=datetime.now()
@@ -44,8 +51,13 @@ class ShoppingRepository:
 
     @staticmethod
     def add_shopping_to_history(db: Session, user: str, valor: float = 0.0, supermercado: str = None, itens: list = None):
+        db_user = db.query(Users).filter(Users.user_name == user).first()
+        if not db_user:
+            raise ValueError(f"Usuário '{user}' não encontrado no banco de dados.")
+            
         shopping = HistoricoCompras(
-            user=user,
+            usuario=db_user,
+            user_name=db_user.user_name,
             gasto_valor=valor,
             data_compra=datetime.now(),
             supermercado=supermercado,
@@ -54,5 +66,18 @@ class ShoppingRepository:
         db.add(shopping)
         db.commit()
         db.refresh(shopping)
-        
-        
+
+    @staticmethod
+    def get_all_items_from_history(db: Session, user: str, periodo: str = "mês atual"):
+        if periodo == "30 dias":
+            return db.query(HistoricoCompras)\
+            .filter(HistoricoCompras.data_compra >= datetime.now() - timedelta(days=30))\
+            .filter(HistoricoCompras.user_name == user)\
+            .order_by(HistoricoCompras.data_compra.asc())\
+            .all()
+        else:
+            return db.query(HistoricoCompras)\
+            .filter(HistoricoCompras.data_compra >= datetime.now().replace(day=1))\
+            .filter(HistoricoCompras.user_name == user)\
+            .order_by(HistoricoCompras.data_compra.asc())\
+            .all()
