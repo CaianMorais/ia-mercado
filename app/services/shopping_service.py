@@ -54,7 +54,8 @@ class ShoppingService:
         
         mensagem_direta = None
         if ia_response and hasattr(ia_response, "mensagem_direta"):
-            mensagem_direta = ia_response.mensagem_direta
+            if not comandos:
+                mensagem_direta = ia_response.mensagem_direta
         
         return {
             "history": history,
@@ -75,7 +76,7 @@ class ShoppingService:
         if cmd.acao == "listar":
             itens_lista = self.repository.get_all_items_from_list(self.db)
             for item in itens_lista:
-                lista_de_itens.append(f"{item.nome_item}")
+                lista_de_itens.append(f"- {item.nome_item}")
 
         elif cmd.acao == "adicionar":
             for item in cmd.itens:

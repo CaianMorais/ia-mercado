@@ -33,9 +33,7 @@ def handle_whatsapp(
 
     # Verifica se o usuário está registrado e ativo
     user_service = UserService(db)
-    print(WaId)
     user = user_service.get_active_user_by_phonenumber(WaId)
-    print(user)
     
     if not user:
         resposta = f"Olá {ProfileName}! Seu número (+{WaId}) não está cadastrado ou está inativo no sistema. Entre em contato com o suporte."

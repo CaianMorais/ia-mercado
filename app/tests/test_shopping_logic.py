@@ -149,7 +149,7 @@ def test_finalizar_compra(service, monkeypatch: MonkeyPatch):
 def test_langgraph_flow_multiple_commands(service, monkeypatch: MonkeyPatch):
     shopping_service, chat_log_service = service
     
-    # 1. Mock do process_message para retornar múltiplos comandos (Adicionar + Pesquisar Preços)
+    # mock do process_message para retornar múltiplos comandos (Adicionar + Pesquisar Preços)
     comandos = RespostaIA(
         comandos=[
             ItemComando(
@@ -165,7 +165,7 @@ def test_langgraph_flow_multiple_commands(service, monkeypatch: MonkeyPatch):
     )
     monkeypatch.setattr(shopping_service.ai_service, "process_message", lambda msg, hist: comandos)
     
-    # 2. Mock do search para não fazer requisição de rede real
+    # mock do search para nao fazer requisicao de rede real
     from app.schemas.bot_schema import PesquisaPrecos
     pesquisa_mock = PesquisaPrecos(
         itens_pesquisados=["maçã: R$ 5.99"],
@@ -174,10 +174,10 @@ def test_langgraph_flow_multiple_commands(service, monkeypatch: MonkeyPatch):
     )
     monkeypatch.setattr(shopping_service.ai_service, "search", lambda items, supermarket, state: pesquisa_mock)
     
-    # 3. Executa o comando via LangGraph
+    # executa o comando via LangGraph
     resultados, lista_de_itens, _ = shopping_service.execute_command("Adicione maçã e pesquise preço no Pão de Açúcar", "UserTeste")
     
-    # 4. Verifica se ambas as ações foram executadas pelo grafo
+    # verifica se ambas as ações foram executadas pelo grafo
     assert "produto maçã adicionado na lista de compras" in resultados
     assert len(lista_de_itens) == 1
     assert "Pesquisa de Preços no Pão de Açúcar" in lista_de_itens[0]
@@ -237,10 +237,10 @@ def test_user_service_registration_checks(db_session):
 
     user_service = UserService(db_session)
 
-    # 1. Testar para número não cadastrado
+    # testa numero nao cadastrado
     assert user_service.get_active_user_by_phonenumber("999999999") is None
 
-    # 2. Adicionar um usuário ativo
+    # adiciona um usuario valido
     active_user = Users(
         user_name="ActiveUser",
         cpf="111.111.111-11",
@@ -253,12 +253,12 @@ def test_user_service_registration_checks(db_session):
     db_session.add(active_user)
     db_session.commit()
 
-    # Usuário ativo deve ser retornado com sucesso
+    # usuário ativo deve ser retornado com sucesso
     found = user_service.get_active_user_by_phonenumber("5511999998888")
     assert found is not None
     assert found.user_name == "ActiveUser"
 
-    # 3. Adicionar um usuário inativo
+    # adiciona um usuario inativo
     inactive_user = Users(
         user_name="InactiveUser",
         cpf="222.222.222-22",
@@ -271,5 +271,35 @@ def test_user_service_registration_checks(db_session):
     db_session.add(inactive_user)
     db_session.commit()
 
-    # Usuário inativo não deve ser retornado (retorna None)
+    # usuário inativo não deve ser retornado (retorna None)
     assert user_service.get_active_user_by_phonenumber("5511999997777") is None
+
+
+def test_mensagem_direta_only_when_no_commands(service, monkeypatch: MonkeyPatch):
+    shopping_service, _ = service
+
+    # tem comando, a mensagem_direta nao deve ser disparada (pois a IA vai resumir ou é uma resposta estruturada)
+    resposta_com_comando = RespostaIA(
+        comandos=[
+            ItemComando(
+                acao=AcaoEnum.ADICIONAR, 
+                itens=["banana"]
+            )
+        ],
+        mensagem_direta="Claro! Adicionando banana para você."
+    )
+    monkeypatch.setattr(shopping_service.ai_service, "process_message", lambda msg, hist: resposta_com_comando)
+    
+    _, _, mensagem_direta_retornada = shopping_service.execute_command("Adiciona banana", "UserTeste")
+    assert mensagem_direta_retornada is None
+
+    # nao tem comando, a mensagem_dreta será disparada para o whatsapp.
+    resposta_sem_comando = RespostaIA(
+        comandos=[],
+        mensagem_direta="Olá! Como posso te ajudar hoje?"
+    )
+    monkeypatch.setattr(shopping_service.ai_service, "process_message", lambda msg, hist: resposta_sem_comando)
+    
+    _, _, mensagem_direta_retornada = shopping_service.execute_command("Olá", "UserTeste")
+    assert mensagem_direta_retornada == "Olá! Como posso te ajudar hoje?"
+
