@@ -154,8 +154,8 @@ async def handle_whatsapp(
                 await message_with_evolution(wa_id, str(resumo.resumo))
                 chat_log_service.add_chat_log(profile_name, body, resumo.resumo)
 
-        if lista_de_itens: # Tratamento seguro para listas
-            if len(lista_de_itens) == 0: #
+        if lista_de_itens: 
+            if len(lista_de_itens) == 0:
                 resposta = f"{profile_name}, sua lista de compras está vazia."
                 await message_with_evolution(wa_id, resposta)
                 chat_log_service.add_chat_log(profile_name, body, resposta)
